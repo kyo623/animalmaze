@@ -432,6 +432,52 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
         return () => clearInterval(interval);
     }, [isCleared, pauseTime]);
 
+    const handleMove = (direction) => {
+        if (isClearedRef.current) return;
+        if (!mazeRef.current.length) return;
+        if (isGivingUpRef.current) return;
+
+        let { x, y } = posRef.current;
+        let moved = false;
+
+        if (direction === 'up') { y -= 1; moved = true; }
+        else if (direction === 'down') { y += 1; moved = true; }
+        else if (direction === 'left') { x -= 1; moved = true; }
+        else if (direction === 'right') { x += 1; moved = true; }
+
+        if (moved) {
+            const currentMaze = mazeRef.current;
+            if (currentMaze[y] && currentMaze[y][x] === 0) {
+                setPos({x, y});
+                setMoves(m => m + 1);
+                const posStr = `${x},${y}`;
+                setVisited(prev => {
+                    const existingIdx = prev.indexOf(posStr);
+                    if (existingIdx !== -1) return prev.slice(0, existingIdx + 1);
+                    return [...prev, posStr];
+                });
+
+                if (x === targetPosRef.current.x && y === targetPosRef.current.y) {
+                    setIsCleared(true);
+                    setAccumulatedTime(prev => {
+                        const activeElapsed = pauseTime ? (pauseTime - stageStartTime) : (Date.now() - stageStartTime);
+                        const newTotal = prev + activeElapsed;
+                        if (stage === MAX_STAGE) setIsGameFinished(true);
+                        return newTotal;
+                    });
+                    if (window.confetti) {
+                        window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f4a28c', '#eebb4d', '#e3cba8'] });
+                    }
+                }
+            }
+        }
+    };
+
+    const handleMoveRef = useRef(handleMove);
+    useEffect(() => {
+        handleMoveRef.current = handleMove;
+    });
+
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (isClearedRef.current) return;
@@ -450,65 +496,18 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
                 return;
             }
 
-            if (isGivingUpRef.current) return;
-            
-            if (['arrowup', 'w', 'ㅈ'].includes(key)) setActiveKey('up');
-            if (['arrowdown', 's', 'ㄴ'].includes(key)) setActiveKey('down');
-            if (['arrowleft', 'a', 'ㅁ'].includes(key)) setActiveKey('left');
-            if (['arrowright', 'd', 'ㅇ'].includes(key)) setActiveKey('right');
+            let direction = null;
+            if (['arrowup', 'w', 'ㅈ'].includes(key)) direction = 'up';
+            else if (['arrowdown', 's', 'ㄴ'].includes(key)) direction = 'down';
+            else if (['arrowleft', 'a', 'ㅁ'].includes(key)) direction = 'left';
+            else if (['arrowright', 'd', 'ㅇ'].includes(key)) direction = 'right';
 
-            if (['arrowup', 'w', 'ㅈ'].includes(key)) {
-                y -= 1; moved = true;
-            } else if (['arrowdown', 's', 'ㄴ'].includes(key)) {
-                y += 1; moved = true;
-            } else if (['arrowleft', 'a', 'ㅁ'].includes(key)) {
-                x -= 1; moved = true;
-            } else if (['arrowright', 'd', 'ㅇ'].includes(key)) {
-                x += 1; moved = true;
-            }
-
-            if (moved) {
-                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            if (direction) {
+                if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
                     e.preventDefault();
                 }
-
-                const currentMaze = mazeRef.current;
-                
-                if (currentMaze[y] && currentMaze[y][x] === 0) {
-                    setPos({x, y});
-                    setMoves(m => m + 1);
-                    const posStr = `${x},${y}`;
-                    setVisited(prev => {
-                        const existingIdx = prev.indexOf(posStr);
-                        if (existingIdx !== -1) {
-                            return prev.slice(0, existingIdx + 1);
-                        } else {
-                            return [...prev, posStr];
-                        }
-                    });
-
-                    if (x === targetPosRef.current.x && y === targetPosRef.current.y) {
-                        setIsCleared(true);
-                        
-                        setAccumulatedTime(prev => {
-                            const activeElapsed = pauseTime ? (pauseTime - stageStartTime) : (Date.now() - stageStartTime);
-                            const newTotal = prev + activeElapsed;
-                            if (stage === MAX_STAGE) {
-                                setIsGameFinished(true);
-                            }
-                            return newTotal;
-                        });
-
-                        if (window.confetti) {
-                            window.confetti({
-                                particleCount: 150,
-                                spread: 80,
-                                origin: { y: 0.6 },
-                                colors: ['#f4a28c', '#eebb4d', '#e3cba8']
-                            });
-                        }
-                    }
-                }
+                setActiveKey(direction);
+                handleMoveRef.current(direction);
             }
         };
 
@@ -533,37 +532,25 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
     const diffText = stage < 4 ? '쉬움' : stage < 8 ? '보통' : '어려움';
 
     return (
-        <div className="flex flex-col items-center w-full px-2 font-pixel relative h-screen overflow-hidden py-4">
+        <div 
+            className="flex flex-col items-center w-full px-2 font-pixel relative h-[100dvh] overflow-hidden py-2 md:py-4"
+            style={{ touchAction: 'none', userSelect: 'none' }}
+        >
             <div className="w-full max-w-6xl flex justify-between items-end mb-2 mx-auto shrink-0">
                 <h1 className="title-gold text-xl md:text-2xl font-pixel flex-1 text-center">
                     ANIMAL'S MAZE ADVENTURE
                 </h1>
             </div>
             
-            <div className="retro-panel mb-4 px-6 py-2 w-full max-w-6xl mx-auto bg-[#e3cba8] border-4 border-[#3d2314] text-center shrink-0">
+            <div className="retro-panel mb-2 md:mb-4 px-6 py-2 w-full max-w-6xl mx-auto bg-[#e3cba8] border-4 border-[#3d2314] text-center shrink-0">
                 <div className="text-[12px] text-[#a05b3d] font-bold mb-1">TOTAL TIME</div>
-                <div className="text-2xl text-[#3d2314] font-bold tracking-widest">{formatTime(elapsedMs)}</div>
+                <div className="text-xl md:text-2xl text-[#3d2314] font-bold tracking-widest">{formatTime(elapsedMs)}</div>
             </div>
 
-            <div className="flex flex-col md:flex-row w-full max-w-6xl mx-auto items-center md:items-stretch justify-center gap-4 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row w-full max-w-6xl mx-auto items-center md:items-stretch justify-center gap-2 md:gap-4 flex-1 min-h-0">
                 
-                {/* Left Panel: Arrow Keys */}
-                <div className="hidden md:flex flex-col items-center retro-panel p-4 bg-[#e3cba8] w-48 shrink-0 justify-center h-full max-h-[600px] my-auto">
-                    <div className="text-[14px] text-[#3d2314] font-bold text-center mb-6 leading-tight font-pixel">
-                        Move with<br/><span className="text-[16px] mt-2 inline-block font-pixel text-[#a05b3d]">ARROW KEYS</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <div className={`arrow-key mb-1 scale-125 ${activeKey === 'up' ? 'active' : ''}`}>↑</div>
-                        <div className="flex space-x-1 scale-125 mt-2">
-                            <div className={`arrow-key ${activeKey === 'left' ? 'active' : ''}`}>←</div>
-                            <div className={`arrow-key ${activeKey === 'down' ? 'active' : ''}`}>↓</div>
-                            <div className={`arrow-key ${activeKey === 'right' ? 'active' : ''}`}>→</div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Center Maze */}
-                <div className="flex-1 w-full h-full flex items-center justify-center min-h-0">
+                <div className="flex-1 w-full h-full flex items-center justify-center min-h-0 order-1 md:order-2">
                     <div 
                         className="maze-grid aspect-square relative border-4 border-[#3d2314] bg-[#2a3f40]"
                         style={{ 
@@ -607,29 +594,69 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
                     </div>
                 </div>
 
-                {/* Right Panel: Stats & Quit */}
-                <div className="flex flex-row md:flex-col justify-between items-center retro-panel p-4 bg-[#e3cba8] w-full md:w-48 shrink-0 md:h-full max-h-[600px] md:my-auto mt-4 md:mt-0">
-                    <div className="flex md:flex-col text-[14px] text-[#3d2314] font-bold md:space-y-4 space-x-6 md:space-x-0 text-center font-pixel">
-                        <div>
-                            <div className="font-pixel text-[#a05b3d] mb-1">Level</div>
-                            <div className="text-2xl">{stage} <span className="text-[12px] block mt-1">({diffText})</span></div>
+                {/* Bottom Controls Wrapper (Mobile) / Side Panels (Desktop) */}
+                <div className="flex flex-row md:contents w-full gap-2 order-2 md:order-none shrink-0 h-32 md:h-auto">
+                    
+                    {/* Left Panel: D-Pad */}
+                    <div className="flex flex-col items-center retro-panel p-2 md:p-4 bg-[#e3cba8] flex-1 md:flex-none md:w-48 shrink-0 justify-center md:h-full max-h-[600px] md:my-auto md:order-1">
+                        <div className="hidden md:block text-[14px] text-[#3d2314] font-bold text-center mb-6 leading-tight font-pixel">
+                            Move with<br/><span className="text-[16px] mt-2 inline-block font-pixel text-[#a05b3d]">ARROW KEYS</span>
                         </div>
-                        <div>
-                            <div className="font-pixel text-[#a05b3d] mb-1 md:mt-4">Moves</div>
-                            <div className="text-2xl">{moves}</div>
+                        <div className="flex flex-col items-center gap-1 scale-[0.85] sm:scale-100 md:scale-125">
+                            <button 
+                                onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('up'); setActiveKey('up'); }}
+                                onPointerUp={() => setActiveKey(null)}
+                                onPointerLeave={() => setActiveKey(null)}
+                                className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-t-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'up' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                            >↑</button>
+                            <div className="flex gap-1">
+                                <button 
+                                    onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('left'); setActiveKey('left'); }}
+                                    onPointerUp={() => setActiveKey(null)}
+                                    onPointerLeave={() => setActiveKey(null)}
+                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-l-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'left' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                >←</button>
+                                <button 
+                                    onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('down'); setActiveKey('down'); }}
+                                    onPointerUp={() => setActiveKey(null)}
+                                    onPointerLeave={() => setActiveKey(null)}
+                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white border-2 border-[#3d2314] rounded-b-lg shadow-[0_4px_0_#3d2314] ${activeKey === 'down' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                >↓</button>
+                                <button 
+                                    onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('right'); setActiveKey('right'); }}
+                                    onPointerUp={() => setActiveKey(null)}
+                                    onPointerLeave={() => setActiveKey(null)}
+                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-r-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'right' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                >→</button>
+                            </div>
                         </div>
                     </div>
-                    <button 
-                        onClick={() => {
-                            if (!isGivingUpRef.current) {
-                                setIsGivingUp(true);
-                                setPauseTime(Date.now());
-                            }
-                        }}
-                        className="retro-btn py-3 px-4 text-[12px] bg-[#a05b3d] text-white font-pixel w-auto md:w-full mt-0 md:mt-auto"
-                    >
-                        QUIT (ESC)
-                    </button>
+
+                    {/* Right Panel: Stats & Quit */}
+                    <div className="flex flex-col justify-between items-center retro-panel p-2 md:p-4 bg-[#e3cba8] flex-1 md:flex-none md:w-48 shrink-0 md:h-full max-h-[600px] md:my-auto md:order-3">
+                        <div className="flex flex-col text-[12px] md:text-[14px] text-[#3d2314] font-bold space-y-2 md:space-y-4 text-center font-pixel mt-2 md:mt-0">
+                            <div>
+                                <div className="font-pixel text-[#a05b3d] mb-1">Level</div>
+                                <div className="text-xl md:text-2xl">{stage} <span className="text-[10px] md:text-[12px] block mt-1">({diffText})</span></div>
+                            </div>
+                            <div>
+                                <div className="font-pixel text-[#a05b3d] mb-1 md:mt-4">Moves</div>
+                                <div className="text-xl md:text-2xl">{moves}</div>
+                            </div>
+                        </div>
+                        <button 
+                            onPointerDown={(e) => {
+                                e.preventDefault();
+                                if (!isGivingUpRef.current) {
+                                    setIsGivingUp(true);
+                                    setPauseTime(Date.now());
+                                }
+                            }}
+                            className="retro-btn py-2 md:py-3 px-2 md:px-4 text-[10px] md:text-[12px] bg-[#a05b3d] text-white font-pixel w-full mt-auto"
+                        >
+                            QUIT
+                        </button>
+                    </div>
                 </div>
             </div>
 
