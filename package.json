@@ -1,0 +1,12 @@
+{
+  "name": "animalmaze",
+  "version": "1.0.0",
+  "description": "Animal's Maze Adventure",
+  "homepage": "https://kyo623.github.io/animalmaze",
+  "scripts": {
+    "deploy": "gh-pages -d ."
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
+  }
+}

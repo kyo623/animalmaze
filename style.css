@@ -1,0 +1,138 @@
+@font-face {
+    font-family: 'DungGeunMo';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #3b5b5c; /* Dark teal fallback */
+    background-image: url('image_18.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    font-family: 'DungGeunMo', sans-serif;
+    color: #3d2314; /* Dark brown text */
+}
+
+.pixelated {
+    image-rendering: pixelated;
+}
+
+/* UI Panels */
+.retro-panel {
+    background-color: #e3cba8;
+    border: 4px solid #3d2314;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    position: relative;
+    /* Torn edges look can be faked with small absolute pseudo-elements, but standard pixel border is okay */
+}
+
+/* Titles */
+.title-gold {
+    color: #eebb4d;
+    text-shadow: 
+        2px 2px 0 #3d2314, 
+        -2px -2px 0 #3d2314, 
+        2px -2px 0 #3d2314, 
+        -2px 2px 0 #3d2314, 
+        0 4px 0 #3d2314;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* Buttons */
+.retro-btn {
+    background-color: #d4b48e;
+    border: 4px solid #3d2314;
+    color: #3d2314;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+    font-family: 'DungGeunMo', sans-serif;
+}
+.retro-btn:active {
+    box-shadow: inset 4px 4px 0 rgba(0,0,0,0.1);
+    transform: translate(2px, 2px);
+}
+
+/* Select Box */
+.retro-select-container {
+    background-color: #d4b48e;
+    border: 4px solid #3d2314;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+}
+
+/* Maze Grid */
+.maze-grid {
+    display: grid;
+    gap: 0;
+    border: 6px solid #3d2314;
+    background-color: #f5e4c3;
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
+}
+
+.maze-cell {
+    /* width/height managed by aspect-ratio in flex child */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Cell types */
+.cell-wall {
+    background-color: #a05b3d;
+    border: 2px solid #3d2314;
+    background-image: 
+        linear-gradient(90deg, transparent 50%, rgba(61, 35, 20, 0.4) 50%, rgba(61, 35, 20, 0.4) 55%, transparent 55%),
+        linear-gradient(rgba(61, 35, 20, 0.4) 10%, transparent 10%);
+    background-size: 50% 50%;
+}
+
+.cell-path {
+    background-color: #f5e4c3;
+    border: 1px solid #e8d4ae;
+}
+
+.cell-visited {
+    background-color: #f4a28c; /* light pink/orange */
+    border: 1px solid #e8d4ae;
+}
+
+/* Arrow Keys */
+.arrow-key {
+    background-color: #e3cba8;
+    border: 3px solid #3d2314;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: inset -2px -2px 0 rgba(0,0,0,0.15);
+    border-radius: 4px;
+    color: #3d2314;
+}
+.arrow-key.active {
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.15);
+    background-color: #d4b48e;
+}
+
+/* Modal styling overrides */
+.modal-overlay {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
