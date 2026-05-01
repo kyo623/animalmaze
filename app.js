@@ -542,9 +542,27 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
                 </h1>
             </div>
             
-            <div className="retro-panel mb-2 md:mb-4 px-6 py-2 w-full max-w-6xl mx-auto bg-[#e3cba8] border-4 border-[#3d2314] text-center shrink-0">
-                <div className="text-[12px] text-[#a05b3d] font-bold mb-1">TOTAL TIME</div>
-                <div className="text-xl md:text-2xl text-[#3d2314] font-bold tracking-widest">{formatTime(elapsedMs)}</div>
+            {/* Top Bar (Merged Mobile View, Desktop View) */}
+            <div className="retro-panel mb-2 md:mb-4 px-4 md:px-6 py-2 w-full max-w-6xl mx-auto bg-[#e3cba8] border-4 border-[#3d2314] flex justify-between items-center shrink-0">
+                {/* Mobile Quit Button */}
+                <button 
+                    onPointerDown={(e) => { e.preventDefault(); if (!isGivingUpRef.current) { setIsGivingUp(true); setPauseTime(Date.now()); } }}
+                    className="md:hidden retro-btn py-1 px-3 text-[12px] bg-[#a05b3d] text-white font-pixel"
+                >
+                    포기
+                </button>
+                
+                {/* Total Time */}
+                <div className="text-center flex-1">
+                    <div className="text-[10px] md:text-[12px] text-[#a05b3d] font-bold mb-1">TOTAL TIME</div>
+                    <div className="text-lg md:text-2xl text-[#3d2314] font-bold tracking-widest">{formatTime(elapsedMs)}</div>
+                </div>
+
+                {/* Mobile Stats */}
+                <div className="md:hidden text-right text-[#3d2314] font-bold font-pixel">
+                    <div className="text-[10px] text-[#a05b3d] mb-1">LV {stage}</div>
+                    <div className="text-[10px]">👟 {moves}</div>
+                </div>
             </div>
 
             <div className="flex flex-col md:flex-row w-full max-w-6xl mx-auto items-center md:items-stretch justify-center gap-2 md:gap-4 flex-1 min-h-0">
@@ -595,53 +613,53 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
                 </div>
 
                 {/* Bottom Controls Wrapper (Mobile) / Side Panels (Desktop) */}
-                <div className="flex flex-row md:contents w-full gap-2 order-2 md:order-none shrink-0 h-32 md:h-auto">
+                <div className="flex flex-row md:contents w-full justify-center order-2 md:order-none shrink-0 pb-8 md:pb-0">
                     
                     {/* Left Panel: D-Pad */}
-                    <div className="flex flex-col items-center retro-panel p-2 md:p-4 bg-[#e3cba8] flex-1 md:flex-none md:w-48 shrink-0 justify-center md:h-full max-h-[600px] md:my-auto md:order-1">
+                    <div className="flex flex-col items-center retro-panel p-2 md:p-4 bg-transparent md:bg-[#e3cba8] border-none md:border-4 md:border-[#3d2314] flex-none md:w-48 shrink-0 justify-center md:h-full max-h-[600px] md:my-auto md:order-1 mx-auto">
                         <div className="hidden md:block text-[14px] text-[#3d2314] font-bold text-center mb-6 leading-tight font-pixel">
                             Move with<br/><span className="text-[16px] mt-2 inline-block font-pixel text-[#a05b3d]">ARROW KEYS</span>
                         </div>
-                        <div className="flex flex-col items-center gap-1 scale-[0.85] sm:scale-100 md:scale-125">
+                        <div className="flex flex-col items-center gap-1 scale-[0.9] sm:scale-100 md:scale-125">
                             <button 
                                 onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('up'); setActiveKey('up'); }}
                                 onPointerUp={() => setActiveKey(null)}
                                 onPointerLeave={() => setActiveKey(null)}
-                                className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-t-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'up' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                className={`w-12 h-12 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-t-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'up' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
                             >↑</button>
                             <div className="flex gap-1">
                                 <button 
                                     onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('left'); setActiveKey('left'); }}
                                     onPointerUp={() => setActiveKey(null)}
                                     onPointerLeave={() => setActiveKey(null)}
-                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-l-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'left' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                    className={`w-12 h-12 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-l-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'left' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
                                 >←</button>
                                 <button 
                                     onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('down'); setActiveKey('down'); }}
                                     onPointerUp={() => setActiveKey(null)}
                                     onPointerLeave={() => setActiveKey(null)}
-                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white border-2 border-[#3d2314] rounded-b-lg shadow-[0_4px_0_#3d2314] ${activeKey === 'down' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                    className={`w-12 h-12 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white border-2 border-[#3d2314] rounded-b-lg shadow-[0_4px_0_#3d2314] ${activeKey === 'down' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
                                 >↓</button>
                                 <button 
                                     onPointerDown={(e) => { e.preventDefault(); handleMoveRef.current('right'); setActiveKey('right'); }}
                                     onPointerUp={() => setActiveKey(null)}
                                     onPointerLeave={() => setActiveKey(null)}
-                                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-r-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'right' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
+                                    className={`w-12 h-12 md:w-12 md:h-12 flex items-center justify-center bg-[#a05b3d] text-white rounded-r-lg border-2 border-[#3d2314] shadow-[0_4px_0_#3d2314] ${activeKey === 'right' ? 'translate-y-1 shadow-none bg-[#8a4b30]' : 'active:shadow-none active:translate-y-1'}`}
                                 >→</button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Panel: Stats & Quit */}
-                    <div className="flex flex-col justify-between items-center retro-panel p-2 md:p-4 bg-[#e3cba8] flex-1 md:flex-none md:w-48 shrink-0 md:h-full max-h-[600px] md:my-auto md:order-3">
-                        <div className="flex flex-col text-[12px] md:text-[14px] text-[#3d2314] font-bold space-y-2 md:space-y-4 text-center font-pixel mt-2 md:mt-0">
+                    {/* Right Panel: Stats & Quit (Desktop Only) */}
+                    <div className="hidden md:flex flex-col justify-between items-center retro-panel p-4 bg-[#e3cba8] w-48 shrink-0 h-full max-h-[600px] my-auto order-3">
+                        <div className="flex flex-col text-[14px] text-[#3d2314] font-bold space-y-4 text-center font-pixel">
                             <div>
                                 <div className="font-pixel text-[#a05b3d] mb-1">Level</div>
-                                <div className="text-xl md:text-2xl">{stage} <span className="text-[10px] md:text-[12px] block mt-1">({diffText})</span></div>
+                                <div className="text-2xl">{stage} <span className="text-[12px] block mt-1">({diffText})</span></div>
                             </div>
                             <div>
-                                <div className="font-pixel text-[#a05b3d] mb-1 md:mt-4">Moves</div>
-                                <div className="text-xl md:text-2xl">{moves}</div>
+                                <div className="font-pixel text-[#a05b3d] mb-1 mt-4">Moves</div>
+                                <div className="text-2xl">{moves}</div>
                             </div>
                         </div>
                         <button 
@@ -652,7 +670,7 @@ const GameScreen = ({ characterId, snackId, onBack }) => {
                                     setPauseTime(Date.now());
                                 }
                             }}
-                            className="retro-btn py-2 md:py-3 px-2 md:px-4 text-[10px] md:text-[12px] bg-[#a05b3d] text-white font-pixel w-full mt-auto"
+                            className="retro-btn py-3 px-4 text-[12px] bg-[#a05b3d] text-white font-pixel w-full mt-auto"
                         >
                             QUIT
                         </button>
